@@ -1,0 +1,192 @@
+<html>
+
+<head>
+    <title>Django Photo feed</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+    <script src="//js.pusher.com/4.0/pusher.min.js"></script>
+    <style>
+body {
+  font-family: sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.file-input__input {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+.file-input__label {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  font-size: 14px;
+  padding: 10px 12px;
+  background-color: #4245a8;
+  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.25);
+}
+
+.file-input__label svg {
+  height: 16px;
+  margin-right: 4px;
+}
+input[type = text] {
+    border-color: #cc1111;
+    margin-left: 10px;
+    border: 2px;
+    border-radius: 8px;
+    padding: 10px 100px;
+    line-height: 18px; 
+    font-size: 25px;  
+}
+body {
+    background-image: url("https://i.pinimg.com/originals/b8/69/5b/b8695b973b7e0ab6ef3a12220ee93a48.gif");
+    background-repeat: no-repeat;
+    width: 100%;
+    height: auto;
+    background-size: cover;
+    /* background-color: rgb(248, 159, 6); */
+}
+lf{
+    margin-left:25%;
+}
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2 style="color:rgb(16, 81, 151)"> Total Subscribers :- {{subscriber}} &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp; Total Users :- {{users}}</h2>
+        <!-- <h2 style="margin-left:100px"> Total Users :- {{users}}</h2> -->
+        <br>
+        <form method="post" enctype="multipart/form-data" action="/push_feed" onsubmit="return feed_it()">
+            <input type="hidden" id="csrf" name="csrf" value="{{ csrf_token }}" />
+            <br>
+            <div class="form-group">
+                <div class="file-input">
+                    <!-- <div class = 'lf'> -->
+                    <input
+                      type="file"
+                      name="file-input"
+                      id="file-input"
+                      class="file-input__input"
+                      required
+                    />
+                    <label class="file-input__label" for="file-input">
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        data-prefix="fas"
+                        data-icon="upload"
+                        class="svg-inline--fa fa-upload fa-w-16"
+                        role="img"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M296 384h-80c-13.3 0-24-10.7-24-24V192h-87.7c-17.8 0-26.7-21.5-14.1-34.1L242.3 5.7c7.5-7.5 19.8-7.5 27.3 0l152.2 152.2c12.6 12.6 3.7 34.1-14.1 34.1H320v168c0 13.3-10.7 24-24 24zm216-8v112c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V376c0-13.3 10.7-24 24-24h136v8c0 30.9 25.1 56 56 56h80c30.9 0 56-25.1 56-56v-8h136c13.3 0 24 10.7 24 24zm-124 88c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20zm64 0c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20z"
+                        ></path>
+                      </svg>
+                      <span>Upload file *</span></label
+                    >
+                  </div>
+                  <!-- </div> -->
+            </div>
+            <div class="form-group">
+                <label for="pwd">comment:</label>
+                <div class ='mrg1'><input type = "text" id="description" name="description" class="form-control" height = 50% required></div>
+            <br>
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">Feed it</button>
+            </div>
+        </form>
+        <div class="row" id="feeds">
+            {% for doc in all_documents %}
+            <span>
+                <div class="row align-items-center">
+                <div class="card" style="width: 50rem; margin-left: 30%; background-color: rgba(0, 0, 0, 0); border: 0px">
+                    <img src="{{doc.document}}" class="card-img-top" alt="feed" height = '200px' width="1500px">
+                    <div class="card-body">
+                      <h3 class="card-title" style = 'color: rgb(0, 21, 255)'>{{doc.description}}</h3>
+                      <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
+                      <!-- <a href="#" class="btn btn-primary">Go somewhere</a> -->
+                    </div>
+                  </div>
+                  </div>
+                  <br>
+                  <br>
+                </span> {% endfor %}
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+</body>
+
+</html>
+
+<script>
+    var files;
+
+    // Add events
+    $(document).ready(function() {
+        $('input[type=file]').on('change', prepareUpload);
+    })
+
+
+    // Grab the files and set them to our variable
+    function prepareUpload(event) {
+        files = event.target.files;
+    }
+
+    function feed_it() {
+        var data = new FormData();
+        $.each(files, function(key, value) {
+            data.append('document', value);
+        });
+        data.append('description', document.getElementById('description').value);
+
+        data.append('csrfmiddlewaretoken', document.getElementById('csrf').value);
+        $.post({
+            url: '/push_feed',
+            data: data,
+            processData: false, // Don't process the files
+            contentType: false, // Set content type to false as jQuery will tell the server its a query string request
+            success: function(data) {
+                if (data == "ok") {
+                    alert('done');
+                    document.getElementById('description').value = '';
+                }
+            },
+            error: function(error) {
+                alert('an error occured, please try again later')
+            }
+        });
+        return false;
+    }
+    var pusher = new Pusher('fcfbccb5f3c92f233684', {
+        encrypted: true,
+        cluster: 'ap2',
+        authTransport: 'jsonp',
+        authEndpoint: '/pusher_authentication'
+    });
+    var my_channel = pusher.subscribe('private-a_channel');
+    my_channel.bind("an_event", function(doc) {
+        alert("message");
+        var new_message = `<span>
+                    <h2>` + doc.description + `</h2>
+                    <img  src="` + doc.document + `">
+                </span>`;
+        $('#feeds').prepend(new_message);
+    });
+</script>
